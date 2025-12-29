@@ -12,4 +12,6 @@ client_scripts {
 files { 
   'LockPart1.png',
   'LockPart2.png',
+  'lock.png',
+  'unlock.png'
 }
