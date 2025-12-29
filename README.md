@@ -4,7 +4,7 @@ EDITED
 
 USAGE
 - Max number is 99
-- For more locks must add mote random numbers (in example find 3 locks)
+- For more locks must add mote random numbers (in the example you will find 3 locks)
 `````lua
 local combo = {math.random(0, 99), math.random(0, 99), math.random(0, 99)}
 local result = exports['safecracker']:StartMinigame(combo)
