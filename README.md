@@ -1,5 +1,6 @@
 EDITED
 - Removed QBCore integration
+- Added Locks
 
 # safecracker
 Safe Cracking Minigame - MOST LIKELY GOING TO REPLACE WITH https://github.com/VHall1/pd-safe
