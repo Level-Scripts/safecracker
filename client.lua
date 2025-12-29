@@ -1,27 +1,41 @@
-function StartMinigame(combo)
-	local Coords = GetEntityCoords(PlayerPedId(), false)
-	local Object = GetClosestObjectOfType(Coords.x, Coords.y, Coords.z, 5.0, `v_ilev_gangsafedoor`, false, false, false)
-	local ObjectHeading = GetEntityHeading(Object)
-	local txd = CreateRuntimeTxd(SafeCracker.Config.TextureDict)
-	for i = 1, 2 do CreateRuntimeTextureFromImage(txd, tostring(i), "LockPart" .. i .. ".PNG") end
-	loadAnimDict("mini@safe_cracking")
-	TaskPlayAnim(PlayerPedId(), "mini@safe_cracking", "dial_turn_anti_fast_1", 3.0, 3.0, -1, 49, 0, 0, 0, 0)
-	FreezeEntityPosition(PlayerPedId(), true)
-	SetEntityHeading(PlayerPedId(), ObjectHeading)
-	SafeCracker.MinigameOpen = true
-	SafeCracker.SoundID 	  = GetSoundId() 
-	SafeCracker.Timer 		  = GetGameTimer()
-  	SafeCracker.StayClosed = false
+function StartMinigame(combo, cb)
+    local ped = PlayerPedId()
 
-	if not RequestAmbientAudioBank(SafeCracker.Config.AudioBank, false) then RequestAmbientAudioBank(SafeCracker.Config.AudioBankName, false); end
-	if not HasStreamedTextureDictLoaded(SafeCracker.Config.TextureDict, false) then RequestStreamedTextureDict(SafeCracker.Config.TextureDict, false); end
-	CreateThread(function() 
-		Update(combo)
-	end)
+    local txd = CreateRuntimeTxd(SafeCracker.Config.TextureDict)
+    for i = 1, 2 do
+        CreateRuntimeTextureFromImage(txd, tostring(i), "LockPart" .. i .. ".PNG")
+    end
+
+    loadAnimDict("mini@safe_cracking")
+    TaskPlayAnim(ped, "mini@safe_cracking", "dial_turn_anti_fast_1", 3.0, 3.0, -1, 49, 0, 0, 0, 0)
+
+    FreezeEntityPosition(ped, true)
+
+    SafeCracker.MinigameOpen = true
+    SafeCracker.SoundID = GetSoundId()
+    SafeCracker.Timer = GetGameTimer()
+    SafeCracker.Callback = cb
+
+    if not HasStreamedTextureDictLoaded(SafeCracker.Config.TextureDict) then
+        RequestStreamedTextureDict(SafeCracker.Config.TextureDict)
+    end
+
+    CreateThread(function()
+        Update(combo)
+    end)
 end
 
-RegisterNetEvent('SafeCracker:StartMinigame', function(combo)
-	StartMinigame(combo); 
+exports('StartMinigame', function(combo)
+	if SafeCracker.MinigameOpen then
+    	return false
+	end
+    local p = promise.new()
+
+    StartMinigame(combo, function(success)
+        p:resolve(success)
+    end)
+
+    return Citizen.Await(p)
 end)
 
 function Update(combo)
@@ -73,25 +87,6 @@ function HandleMinigame(combo)
 		lockRot = math.random(1, 149)
 	end
 
-	-----------------------
-	-- REDO LOCK NUMBERS --
-	-----------------------
-	-- Make numbers persist if chosen.
-	-- Add number count for difficulty.
-	-- Multiples of 2 are positive, 45 - 359;
-	-- Multiples of 3 are negative, 719 - 405;
-	-- Everything else is negative, 45 - 359;
-
-	---------------------------------------------
-	-- Still havn't done, you're welcome to ^^ --
-	---------------------------------------------
-	--[[for i = 1,5 do
-		print(math.floor((lockNumbers[i] % 360) / 3.60))
-	end]]--
-	--------------------------------------
-	-- Comment this out for a challenge --
-	--------------------------------------
-
     local correctCount	= 1
     local hasRandomized	= false
 
@@ -131,16 +126,18 @@ function HandleMinigame(combo)
 	end
 end
 
-
 function EndMinigame(won)
-	SafeCracker.MinigameOpen = false
-	if won then 
-		PlaySoundFrontend(SafeCracker.SoundID, SafeCracker.Config.SafeFinalSound, SafeCracker.Config.SafeSoundset, true)
-	else
-	end
-  	TriggerEvent('SafeCracker:EndMinigame', won)
-	FreezeEntityPosition(PlayerPedId(), false)
-	ClearPedTasksImmediately(PlayerPedId())
+    if not SafeCracker.MinigameOpen then return end
+
+    SafeCracker.MinigameOpen = false
+
+    FreezeEntityPosition(PlayerPedId(), false)
+    ClearPedTasksImmediately(PlayerPedId())
+
+    if SafeCracker.Callback then
+        SafeCracker.Callback(won)
+        SafeCracker.Callback = nil
+    end
 end
 
 RegisterNetEvent('SafeCracker:EndGame', function()
