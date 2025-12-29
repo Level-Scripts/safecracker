@@ -25,13 +25,3 @@ SafeCracker.Config = {
 	SafeResetSound	= "tumbler_reset",
 	SafeOpenSound	= "safe_door_open",
 }
-
-SafeCracker.SafeModels = {
-	Safe  	= "bkr_prop_biker_safebody_01a",
-	Door  	= "bkr_prop_biker_safedoor_01a",
-}
-
-SafeCracker.SafeObjects = {
-	safeObj  = { ModelName = SafeCracker.SafeModels.Safe,  Pos 	= vector3(   0.0,   0.0,   -0.1 ), Heading =  3.7,   Rot = vector3(   0.0,   0.0,    0.0), 			Frozen = false },
-	doorObj  = { ModelName = SafeCracker.SafeModels.Door,  Pos 	= vector3(   0.0,   0.0,    0.0 ), Heading =  3.7,   Rot = vector3(   0.0,   0.0,    0.0), 			Frozen = true  },
-}
